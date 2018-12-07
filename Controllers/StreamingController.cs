@@ -139,9 +139,10 @@ namespace Ireckonu.Controllers
 
             var uploadedData = new UploadedData()
             {
-                Name = user.Name,
-                Age = user.Age,
-                Zipcode = user.Zipcode,
+                //Name = user.Name,
+                //Age = user.Age,
+                //Zipcode = user.Zipcode,
+                FileId = Guid.NewGuid(),
                 FilePath = targetFilePath
             };
 
@@ -149,7 +150,8 @@ namespace Ireckonu.Controllers
 
             //SaveAsDb(FilePath);
             //SaveAsJsonFile(FilePath);
-            return Ok(uploadedData);
+            //return Ok(uploadedData);
+            return Json(uploadedData);
         }
         #endregion
 

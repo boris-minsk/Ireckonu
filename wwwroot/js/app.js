@@ -1,13 +1,13 @@
 ﻿/// <reference path="models.js" />
 
-var User = (function () {
-  function User(name, age, zipCode, curriculumVitae) {
-    this.name = name;
-    this.age = age;
-    this.zipCode = zipCode;
-    this.curriculumVitae = curriculumVitae;
+var FileUpload = (function () {
+  function FileUpload(/*name, age, zipCode,*/ filePath) {
+    //this.name = name;
+    //this.age = age;
+    //this.zipCode = zipCode;
+    this.filePath = filePath;
   }
-  return User;
+  return FileUpload;
 }());
 
 var myApp = angular.module('myApp', []);
@@ -27,13 +27,13 @@ myApp.directive('fileModel', ['$parse', function ($parse) {
   };
 }]);
 
-myApp.service('userService', ['$http', function ($http) {
-    this.createUser = function(user) {
+myApp.service('fileService', ['$http', function ($http) {
+    this.uploadFile = function(file) {
         var fd = new FormData();
-        fd.append('name', user.name);
-        fd.append('age', user.age);
-        fd.append('zipCode', user.zipCode);
-        fd.append('curriculumVitae', user.curriculumVitae);
+        //fd.append('name', user.name);
+        //fd.append('age', user.age);
+        //fd.append('zipCode', user.zipCode);
+        fd.append('filePath', file.filePath);
 
         return $http.post('/streaming/upload', fd, {
             transformRequest: angular.identity,
@@ -44,16 +44,16 @@ myApp.service('userService', ['$http', function ($http) {
     };
 }]);
 
-myApp.controller('myCtrl', ['$scope', 'userService', function ($scope, userService) {
-  $scope.createUser = function () {
+myApp.controller('myCtrl', ['$scope', 'fileService', function ($scope, fileService) {
+    $scope.uploadFile = function () {
     $scope.showUploadStatus = false;
     $scope.showUploadedData = false;
 
-      var user = new User($scope.name, $scope.age, $scope.zipCode, $scope.curriculumVitae);
+    var file = new FileUpload(/*$scope.name, $scope.age, $scope.zipCode,*/ $scope.filePath);
 
-    userService.createUser(user).then(function (response) { // success
+    fileService.uploadFile(file).then(function (response) { // success
       if (response.status == 200) {
-        $scope.uploadStatus = "User created sucessfully.";
+        $scope.uploadStatus = "File uploaded sucessfully.";
         $scope.uploadedData = response.data;
         $scope.showUploadStatus = true;
         $scope.showUploadedData = true;
@@ -61,7 +61,7 @@ myApp.controller('myCtrl', ['$scope', 'userService', function ($scope, userServi
       }
     },
     function (response) { // failure
-      $scope.uploadStatus = "User creation failed with status code: " + response.status;
+      $scope.uploadStatus = "File upload failed with status code: " + response.status;
       $scope.showUploadStatus = true;
       $scope.showUploadedData = false;
       $scope.errors = [];

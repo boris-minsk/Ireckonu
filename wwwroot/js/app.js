@@ -1,10 +1,7 @@
 ﻿/// <reference path="models.js" />
 
 var FileUpload = (function () {
-  function FileUpload(/*name, age, zipCode,*/ filePath) {
-    //this.name = name;
-    //this.age = age;
-    //this.zipCode = zipCode;
+  function FileUpload(filePath) {
     this.filePath = filePath;
   }
   return FileUpload;
@@ -30,9 +27,6 @@ myApp.directive('fileModel', ['$parse', function ($parse) {
 myApp.service('fileService', ['$http', function ($http) {
     this.uploadFile = function(file) {
         var fd = new FormData();
-        //fd.append('name', user.name);
-        //fd.append('age', user.age);
-        //fd.append('zipCode', user.zipCode);
         fd.append('filePath', file.filePath);
 
         return $http.post('/streaming/upload', fd, {
@@ -49,11 +43,11 @@ myApp.controller('myCtrl', ['$scope', 'fileService', function ($scope, fileServi
     $scope.showUploadStatus = false;
     $scope.showUploadedData = false;
 
-    var file = new FileUpload(/*$scope.name, $scope.age, $scope.zipCode,*/ $scope.filePath);
+    var file = new FileUpload($scope.filePath);
 
     fileService.uploadFile(file).then(function (response) { // success
       if (response.status == 200) {
-        $scope.uploadStatus = "File uploaded sucessfully.";
+        $scope.uploadStatus = "File uploaded successfully.";
         $scope.uploadedData = response.data;
         $scope.showUploadStatus = true;
         $scope.showUploadedData = true;

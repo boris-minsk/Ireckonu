@@ -7,12 +7,11 @@ namespace Ireckonu
 {
     public class Startup
     {
-        #region snippet1
+        #region Config
         public void ConfigureServices(IServiceCollection services)
         {
             // Angular's default header name for sending the XSRF token.
             services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
-            // todo: uncomment BS
             services.AddMvc();
         }
         #endregion

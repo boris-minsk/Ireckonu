@@ -40,9 +40,9 @@ namespace Ireckonu.Controllers
         #region Disable the form value model binding
         // 1. Disable the form value model binding here to take control of handling 
         //    potentially large files.
-        // 2. Typically antiforgery tokens are sent in request body, but since we 
+        // 2. Typically anti-forgery tokens are sent in request body, but since we 
         //    do not want to read the request body early, the tokens are made to be 
-        //    sent via headers. The antiforgery token filter first looks for tokens
+        //    sent via headers. The anti-forgery token filter first looks for tokens
         //    in the request header and then falls back to reading the body.
         [HttpPost]
         [DisableFormValueModelBinding]
@@ -54,8 +54,7 @@ namespace Ireckonu.Controllers
                 return BadRequest($"Expected a multipart request, but got {Request.ContentType}");
             }
 
-            // Used to accumulate all the form url encoded key value pairs in the 
-            // request.
+            // Used to accumulate all the form url encoded key value pairs in the request.
             var formAccumulator = new KeyValueAccumulator();
             string targetFilePath = null;
 
@@ -67,8 +66,7 @@ namespace Ireckonu.Controllers
             var section = await reader.ReadNextSectionAsync();
             while (section != null)
             {
-                ContentDispositionHeaderValue contentDisposition;
-                var hasContentDispositionHeader = ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out contentDisposition);
+                var hasContentDispositionHeader = ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out var contentDisposition);
 
                 if (hasContentDispositionHeader)
                 {
@@ -84,10 +82,7 @@ namespace Ireckonu.Controllers
                     }
                     else if (MultipartRequestHelper.HasFormDataContentDisposition(contentDisposition))
                     {
-                        // Content-Disposition: form-data; name="key"
-                        //
-                        // value
-
+                        // Content-Disposition: form-data; name="key" value
                         // Do not limit the key name length here because the 
                         // multipart headers length limit is already in effect.
                         var key = HeaderUtilities.RemoveQuotes(contentDisposition.Name);
@@ -105,6 +100,7 @@ namespace Ireckonu.Controllers
                             {
                                 value = String.Empty;
                             }
+
                             formAccumulator.Append(key.ToString(), value);
 
                             if (formAccumulator.ValueCount > DefaultFormOptions.ValueCountLimit)
@@ -121,14 +117,13 @@ namespace Ireckonu.Controllers
             }
 
             // Bind form data to a model
-            var user = new User();
+            var upload = new Upload();
             var formValueProvider = new FormValueProvider(
                 BindingSource.Form,
                 new FormCollection(formAccumulator.GetResults()),
                 CultureInfo.CurrentCulture);
 
-            var bindingSuccessful = await TryUpdateModelAsync(user, prefix: "",
-                valueProvider: formValueProvider);
+            var bindingSuccessful = await TryUpdateModelAsync(upload, prefix: "", valueProvider: formValueProvider);
             if (!bindingSuccessful)
             {
                 if (!ModelState.IsValid)
@@ -139,9 +134,6 @@ namespace Ireckonu.Controllers
 
             var uploadedData = new UploadedData()
             {
-                //Name = user.Name,
-                //Age = user.Age,
-                //Zipcode = user.Zipcode,
                 FileId = Guid.NewGuid(),
                 FilePath = targetFilePath
             };
@@ -150,8 +142,8 @@ namespace Ireckonu.Controllers
 
             //SaveAsDb(FilePath);
             //SaveAsJsonFile(FilePath);
-            //return Ok(uploadedData);
-            return Json(uploadedData);
+            //return Json(uploadedData);
+            return Ok(new { fileId = uploadedData.FileId, filePath = uploadedData.FilePath });
         }
         #endregion
 
